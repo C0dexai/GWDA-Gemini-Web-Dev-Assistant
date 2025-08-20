@@ -1,0 +1,57 @@
+import React from 'react';
+import InfoIcon from './icons/InfoIcon';
+
+const Configuration = (): React.ReactNode => {
+    return (
+        <div className="animate-fade-in max-w-2xl mx-auto">
+            <div className="text-center">
+                <h2 className="text-3xl font-bold text-slate-100">Environment Configuration</h2>
+                <p className="mt-2 text-lg text-slate-400">
+                    This section demonstrates how environment variables are handled securely.
+                </p>
+            </div>
+
+            <div className="mt-8 space-y-6">
+                <div className="glass-card rounded-lg p-6">
+                    <div>
+                        <label htmlFor="api-name" className="block text-sm font-medium text-slate-300 mb-1">
+                            API Name (Example)
+                        </label>
+                        <input
+                            type="text"
+                            id="api-name"
+                            value="Gemini API"
+                            disabled
+                            className="w-full bg-slate-900/60 border border-slate-700 rounded-md shadow-sm py-2 px-3 text-slate-400 cursor-not-allowed focus:outline-none"
+                        />
+                        <p className="mt-2 text-xs text-slate-500">
+                            This is an example of a non-sensitive configuration value.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="glass-card rounded-lg p-6">
+                     <div>
+                        <label htmlFor="api-key" className="block text-sm font-medium text-slate-300 mb-1">
+                            API Key
+                        </label>
+                        <div
+                            id="api-key"
+                            className="w-full bg-slate-900/60 border border-slate-700 rounded-md shadow-sm py-2 px-3 text-slate-400 font-mono"
+                        >
+                            <span aria-hidden="true">••••••••••••••••••••••••••••••••••</span>
+                        </div>
+                        <div className="mt-3 flex items-start gap-2 bg-sky-900/30 border border-sky-400/20 text-sky-200 px-3 py-2 rounded-lg text-sm">
+                            <InfoIcon className="w-5 h-5 mt-0.5 flex-shrink-0 text-sky-400" />
+                            <span>
+                                <strong className="font-semibold">Security Best Practice:</strong> Your API key is loaded securely from an environment variable (`process.env.API_KEY`) and is never exposed in the client-side code. This input is for display purposes only.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Configuration;

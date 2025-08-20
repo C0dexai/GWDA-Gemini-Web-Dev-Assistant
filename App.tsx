@@ -14,6 +14,8 @@ import Tabs from './components/Tabs';
 import CodeIcon from './components/icons/CodeIcon';
 import UsersIcon from './components/icons/UsersIcon';
 import WorkflowIcon from './components/icons/WorkflowIcon';
+import Configuration from './components/Configuration';
+import CogIcon from './components/icons/CogIcon';
 
 const App = (): React.ReactNode => {
   const [code, setCode] = useState<string>('');
@@ -107,6 +109,11 @@ const App = (): React.ReactNode => {
         label: 'Stack Workflow',
         icon: <WorkflowIcon />,
         content: <OrchestrationVisualizer />
+    },
+    {
+        label: 'Configuration',
+        icon: <CogIcon />,
+        content: <Configuration />
     }
   ];
 
