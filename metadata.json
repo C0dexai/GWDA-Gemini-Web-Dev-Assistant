@@ -1,0 +1,6 @@
+{
+  "name": "GWDA-Gemini Web Dev Assistant",
+  "description": "An AI-powered assistant for web developers. Get expert feedback on your code, focusing on modern best practices for Node.js, Vue, Vite, and UI/UX design inspired by Shadcn.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
