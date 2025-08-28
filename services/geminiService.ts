@@ -1,20 +1,22 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const API_KEY = process.env.API_KEY;
+const API_KEY_ENV = process.env.API_KEY;
 
-if (!API_KEY) {
-    throw new Error("API_KEY environment variable is not set.");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
-
-export async function reviewCode(code: string, language: string): Promise<string> {
+export async function reviewCode(code: string, language: string, userApiKey?: string): Promise<string> {
   if (!code.trim()) {
-    throw new Error("Cannot review empty code.");
+    return "Error: Cannot review empty code.";
   }
 
+  const effectiveApiKey = userApiKey || API_KEY_ENV;
+
+  if (!effectiveApiKey) {
+    return "Error: API Key is missing. Please provide one in the 'Configuration' tab or set the `API_KEY` environment variable.";
+  }
+  
+  const ai = new GoogleGenAI({ apiKey: effectiveApiKey });
   const model = "gemini-2.5-flash";
+
   const systemInstruction = `
 You are a world-class senior full-stack web developer with deep expertise in UI/UX design. Your specialties include Node.js, Vue, Vite, and building beautiful, accessible UIs with utility-first frameworks like Tailwind CSS (inspired by shadcn/ui).
 
@@ -56,8 +58,11 @@ ${code}
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     if (error instanceof Error) {
-        return `Error during code review: ${error.message}`;
+        if (error.message.includes('API key not valid')) {
+            return `Error: The provided API key is not valid. Please check it in the 'Configuration' tab or your environment variables.`;
+        }
+        return `Error: An issue occurred during the code review: ${error.message}`;
     }
-    return "An unknown error occurred during code review.";
+    return "Error: An unknown error occurred during code review.";
   }
 }

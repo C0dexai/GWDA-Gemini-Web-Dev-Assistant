@@ -1,10 +1,11 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import UploadIcon from './icons/UploadIcon';
 
 interface CodeInputProps {
   code: string;
   setCode: (code: string) => void;
   setLanguage: (language: string) => void;
+  language: string;
 }
 
 const EXTENSION_TO_LANGUAGE: { [key: string]: string } = {
@@ -30,9 +31,21 @@ const EXTENSION_TO_LANGUAGE: { [key: string]: string } = {
   'vue': 'javascript', // Defaulting .vue to javascript for review
 };
 
-const CodeInput = ({ code, setCode, setLanguage }: CodeInputProps): React.ReactNode => {
+// Add Prism to window type for TypeScript
+declare global {
+    interface Window {
+        Prism: {
+            highlight: (text: string, grammar: any, language: string) => string;
+            languages: { [key: string]: any };
+        };
+    }
+}
+
+const CodeInput = ({ code, setCode, setLanguage, language }: CodeInputProps): React.ReactNode => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const preRef = useRef<HTMLPreElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleFile = useCallback((file: File) => {
     if (file) {
@@ -89,6 +102,24 @@ const CodeInput = ({ code, setCode, setLanguage }: CodeInputProps): React.ReactN
     fileInputRef.current?.click();
   };
 
+  const handleScroll = () => {
+    if (preRef.current && textareaRef.current) {
+      preRef.current.scrollTop = textareaRef.current.scrollTop;
+      preRef.current.scrollLeft = textareaRef.current.scrollLeft;
+    }
+  };
+
+  const highlightedCode = useMemo(() => {
+    const lang = language && window.Prism?.languages[language] ? language : 'plaintext';
+    if (typeof window !== 'undefined' && window.Prism) {
+        // Append a newline to ensure the last line is rendered, which helps with scrolling synchronization.
+        return window.Prism.highlight(code + '\n', window.Prism.languages[lang], lang);
+    }
+    // Basic HTML escaping as a fallback
+    const escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    return escaped + '\n';
+  }, [code, language]);
+
 
   return (
     <div>
@@ -100,19 +131,34 @@ const CodeInput = ({ code, setCode, setLanguage }: CodeInputProps): React.ReactN
         onDragLeave={onDragLeave}
         onDragOver={onDragOver}
         onDrop={onDrop}
-        className={`relative w-full h-80 bg-slate-900/60 border border-slate-700 backdrop-blur-sm rounded-md shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:ring-cyan-500 focus-within:border-cyan-500 ${isDragging ? 'border-cyan-500 ring-2 ring-cyan-500' : ''}`}
+        className={`relative w-full h-80 bg-slate-900/60 border border-slate-700 backdrop-blur-sm rounded-md shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:ring-cyan-500 focus-within:border-cyan-500 overflow-hidden ${isDragging ? 'border-cyan-500 ring-2 ring-cyan-500' : ''}`}
       >
         <textarea
+          ref={textareaRef}
           id="code-input"
           value={code}
           onChange={(e) => setCode(e.target.value)}
+          onScroll={handleScroll}
           placeholder="Paste your code here, or drop a file..."
-          className="w-full h-full bg-transparent p-4 text-slate-100 font-mono text-sm focus:outline-none resize-y"
+          className="absolute inset-0 z-20 w-full h-full bg-transparent p-4 text-transparent caret-white font-mono text-sm focus:outline-none resize-none"
           spellCheck="false"
+          autoCapitalize="off"
+          autoComplete="off"
+          autoCorrect="off"
         />
+        <pre
+            ref={preRef}
+            className="absolute inset-0 z-10 w-full h-full p-4 font-mono text-sm overflow-auto pointer-events-none"
+            aria-hidden="true"
+        >
+            <code
+                className={`language-${language}`}
+                dangerouslySetInnerHTML={{ __html: highlightedCode }}
+            />
+        </pre>
         <div 
           onClick={onAreaClick}
-          className={`absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 ${code ? 'opacity-0 hover:opacity-100' : 'opacity-100'} bg-slate-900/40 hover:bg-slate-900/60 cursor-pointer -z-0 focus:z-10`}
+          className={`absolute inset-0 z-30 flex flex-col items-center justify-center transition-opacity duration-300 ${code ? 'opacity-0 pointer-events-none' : 'opacity-100'} bg-slate-900/40 hover:bg-slate-900/60 cursor-pointer`}
           role="button"
           aria-label="Upload or drop a code file"
         >

@@ -1,13 +1,71 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import FormatIcon from './icons/FormatIcon';
+
+// Let TypeScript know Prism and Prettier are available on the window object
+declare global {
+    interface Window {
+        Prism: {
+            highlightAll: () => void;
+            highlight(text: string, grammar: any, language: string): string;
+            languages: { [key: string]: any };
+        };
+        prettier: {
+            format(source: string, options: any): Promise<string>;
+        };
+        prettierPlugins: {
+            markdown: any;
+            babel: any;
+            typescript: any;
+        };
+    }
+}
 
 interface ReviewOutputProps {
     review: string;
 }
 
 const ReviewOutput = ({ review }: ReviewOutputProps): React.ReactNode => {
-    if (!review) return null;
+    const [displayedReview, setDisplayedReview] = useState(review);
 
-    const lines = review.split('\n');
+    // When a new review prop comes in, reset the displayed content
+    useEffect(() => {
+        setDisplayedReview(review);
+    }, [review]);
+    
+    // Highlight code blocks whenever the displayed content changes
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.Prism) {
+            window.Prism.highlightAll();
+        }
+    }, [displayedReview]);
+
+    const handleFormat = async () => {
+        if (typeof window.prettier === 'undefined' || typeof window.prettierPlugins === 'undefined') {
+            console.error("Prettier is not loaded.");
+            // In a real app, you might want to show a user-facing error.
+            return;
+        }
+        try {
+            const formatted = await window.prettier.format(review, {
+                parser: "markdown",
+                plugins: [
+                    window.prettierPlugins.markdown,
+                    window.prettierPlugins.babel,
+                    window.prettierPlugins.typescript
+                ],
+                proseWrap: 'always',
+                printWidth: 80,
+            });
+            setDisplayedReview(formatted);
+        } catch (error) {
+            console.error("Failed to format code with Prettier:", error);
+            // Handle error, maybe show a message to the user.
+        }
+    };
+    
+    if (!displayedReview) return null;
+
+    const lines = displayedReview.split('\n');
     const elements: React.ReactNode[] = [];
     let isCodeBlock = false;
     let codeBlockContent: string[] = [];
@@ -18,12 +76,11 @@ const ReviewOutput = ({ review }: ReviewOutputProps): React.ReactNode => {
             if (isCodeBlock) {
                 // End of code block
                 elements.push(
-                    <div key={`code-wrapper-${index}`} className="my-4 rounded-md bg-black/25 backdrop-blur-sm border border-slate-700 overflow-hidden">
-                        <div className="text-xs text-slate-400 bg-black/20 px-4 py-1">{codeBlockLang || 'code'}</div>
-                        <pre className="p-4 font-mono text-sm overflow-x-auto">
-                            <code>{codeBlockContent.join('\n')}</code>
-                        </pre>
-                    </div>
+                    <pre key={`code-${index}`} className="font-mono text-sm overflow-x-auto my-4">
+                        <code className={`language-${codeBlockLang || 'plaintext'}`}>
+                            {codeBlockContent.join('\n')}
+                        </code>
+                    </pre>
                 );
                 codeBlockContent = [];
                 codeBlockLang = '';
@@ -68,7 +125,16 @@ const ReviewOutput = ({ review }: ReviewOutputProps): React.ReactNode => {
     });
 
     return (
-        <div className="mt-6 glass-card rounded-lg p-6 animate-fade-in">
+        <div className="relative mt-6 glass-card rounded-lg p-6 animate-fade-in">
+             <button
+                onClick={handleFormat}
+                className="absolute top-4 right-4 z-10 flex items-center gap-2 bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 hover:text-white font-medium py-1.5 px-3 rounded-md transition-all text-xs border border-slate-600/50"
+                title="Format with Prettier"
+                aria-label="Format code with Prettier"
+            >
+                <FormatIcon className="w-4 h-4" />
+                <span>Format Code</span>
+            </button>
             {elements}
         </div>
     );

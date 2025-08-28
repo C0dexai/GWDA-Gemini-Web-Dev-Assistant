@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gemini Web Dev Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" integrity="sha512-mIs9kKbaw6JutVRihS6AlQKbAMFDVZeZKAiA8Ju_sz1H6eLgWJhIzaU5OkvGDqByvq2PjPstwezGxdsgpZCgGg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
       html {
         scroll-behavior: smooth;
@@ -43,6 +44,17 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
       }
+      /* Customizations for PrismJS to match the theme */
+      pre[class*="language-"] {
+        background: rgba(15, 23, 42, 0.8) !important; /* slate-900 with opacity */
+        border: 1px solid #334155; /* slate-700 */
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+      code[class*="language-"],
+      pre[class*="language-"] {
+        text-shadow: none !important;
+      }
     </style>
   <script type="importmap">
 {
@@ -58,5 +70,13 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" integrity="sha512-9khQRAUBomG5OKkWY/rdjpA6iP3ZBfAZURC5spdnNuV2A6EKCdeC_vA9jN/G9yQpeQW6meo4IqBGsM777LNBsQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" integrity="sha512-S_2_LMwT3LNYwEkfkK5/2pPCLy/vTnyP4/K31J3L0iU2vC9JmhmbFmrB5a8BrPjR2T3t+yT/mOReoFq9eiQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- Prettier for code formatting -->
+    <script src="https://unpkg.com/prettier@3.3.3/standalone.js"></script>
+    <script src="https://unpkg.com/prettier@3.3.3/plugins/markdown.js"></script>
+    <script src="https://unpkg.com/prettier@3.3.3/plugins/babel.js"></script>
+    <script src="https://unpkg.com/prettier@3.3.3/plugins/typescript.js"></script>
   </body>
 </html>

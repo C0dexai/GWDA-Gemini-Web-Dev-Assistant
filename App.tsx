@@ -23,6 +23,7 @@ const App = (): React.ReactNode => {
   const [review, setReview] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [apiKey, setApiKey] = useState<string>('');
   const mainContentRef = useRef<HTMLElement>(null);
 
   const handleGetStartedClick = () => {
@@ -39,15 +40,22 @@ const App = (): React.ReactNode => {
     setIsLoading(true);
 
     try {
-      const result = await reviewCode(code, language);
-      setReview(result);
+      const result = await reviewCode(code, language, apiKey);
+      // The service now returns error strings, so we check for them
+      if (result.startsWith('Error:')) {
+        setError(result.substring(7)); // Remove "Error: " prefix
+        setReview('');
+      } else {
+        setReview(result);
+      }
     } catch (e: unknown) {
+      // This will catch network errors or unexpected issues in the service
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [code, language]);
+  }, [code, language, apiKey]);
 
   const tabs = [
     {
@@ -58,7 +66,7 @@ const App = (): React.ReactNode => {
                 <div className="glass-card rounded-lg p-6 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
-                        <CodeInput code={code} setCode={setCode} setLanguage={setLanguage} />
+                        <CodeInput code={code} setCode={setCode} setLanguage={setLanguage} language={language} />
                         </div>
                         <LanguageSelector language={language} setLanguage={setLanguage} />
                     </div>
@@ -113,7 +121,7 @@ const App = (): React.ReactNode => {
     {
         label: 'Configuration',
         icon: <CogIcon />,
-        content: <Configuration />
+        content: <Configuration apiKey={apiKey} setApiKey={setApiKey} />
     }
   ];
 
